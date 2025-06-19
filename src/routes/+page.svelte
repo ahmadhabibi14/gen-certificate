@@ -1,15 +1,69 @@
 <script lang="ts">
-	import { onMount } from "svelte";
   import * as htmlToImage from 'html-to-image';
+	import Input from "@/lib/components/ui/input/input.svelte";
+	import Button from "@/lib/components/ui/button/button.svelte";
+  import CalendarIcon from "@lucide/svelte/icons/calendar";
+  import {
+	CalendarDate,
+    DateFormatter,
+    type DateValue,
+    getLocalTimeZone
+  } from "@internationalized/date";
+  import { cn } from "$lib/utils.js";
+  import { buttonVariants } from "$lib/components/ui/button/index.js";
+  import { Calendar } from "$lib/components/ui/calendar/index.js";
+  import * as Popover from "$lib/components/ui/popover/index.js";
+  import * as Select from "$lib/components/ui/select/index.js";
+
+  let namaLengkap: string = $state('Ahmad Rizky Nusantara Habibi');
+  let labelAchievement: string = $state('Atas partisipasi pada acara');
+  let achievement: string = $state('Meet Up Cyber Security: The Smart Way to Start in Cyber Security');
+
+  const fields = [
+    'CYBER SECURITY',
+    'UI/UX DESIGN',
+    'WEB PROGRAMMING',
+    'INTERNET OF THINGS',
+  ];
+
+  let field: string = $state('CYBER SECURITY');
+
+  const certTypes = [
+    'Certificate Completion',
+    'Certificate Participation',
+    'Certificate Achievement',
+  ]
+  let certType: string = $state('Certificate Completion')
+
+  let certId: string = $state('49DK2MAPNBQP');
+  
+  const df = new DateFormatter("en-US", {
+    dateStyle: "long"
+  });
+
+  const year: number = new Date().getFullYear();
+  const month: number = new Date().getMonth() + 1;
+  const day: number = new Date().getDate();
+
+  let tanggal = $state<DateValue | undefined>(new CalendarDate(year, month, day));
+  let contentRef = $state<HTMLElement | null>(null);
+
+  let indoDate: string = $state('');
+
+  function formatTanggalIndo(tanggal: string) {
+    const bulanIndo = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+
+    const [year, month, day] = tanggal.split("-");
+    return `${parseInt(day)} ${bulanIndo[parseInt(month) - 1]} ${year}`;
+  }
 
   let certificateEl: HTMLDivElement;
-  let isCertificateReady: boolean = false;
-
-  onMount(() => {
-    isCertificateReady = true;
-  })
 
   async function generateCertificate() {
+    indoDate = formatTanggalIndo(tanggal?.toString() || '')
     htmlToImage.toPng(certificateEl, {
       quality: 1,
     }).then(function (dataUrl) {
@@ -21,91 +75,191 @@
   }
 </script>
 
-<div class="flex w-full min-h-[1000px]">
-  <div class="container mx-auto my-10 flex flex-col justify-center items-center gap-5">
-    <h1 class="text-4xl font-bold">Generate Certificate</h1>
-    {#if isCertificateReady}
-      <div bind:this={certificateEl} id="certificate" class="certificate">
-        <img
-          src="img/certificate-template.png"
-          alt="template"
-          class="w-full h-full"
-          crossorigin="anonymous"
-        />
-
-        <!-- Label Nama -->
-        <span class="label-nama">Diberikan kepada</span>
-        <!-- Nama Lengkap -->
-        <span class="nama-lengkap">Ahmad Rizky Nusantara Habibi</span>
-
-        <!-- Label Pencapaian -->
-        <span class="label-achievement">Atas partisipasi pada acara</span>
-        <!-- Pencapaian -->
-        <div class="achievement">
-          <p>Meet Up Cyber Security: The Smart Way to Start in Cyber Security</p>
+<div class="flex w-full min-h-screen flex-col relative">
+  <div class="h-full container mx-auto my-10 flex flex-col gap-5">
+    <h1 class="text-4xl font-bold text-center">Generate Certificate</h1>
+    <div class="flex flex-col gap-5 w-full px-5 md:px-0 md:w-[500px] mx-auto">
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1.5 w-full">
+          <label for="namaLengkap" class="text-xs ml-2">Nama Lengkap</label>
+          <Input
+            id="namaLengkap"
+            bind:value={namaLengkap}
+            placeholder="I Komang John Cena"
+          />
         </div>
-
-        <!-- Tanggal Sertifikat -->
-        <span class="date">14 Juni 2025</span>
-
-        <div class="ttd">
-          <!-- DEKAN -->
-          <div class="item">
-            <div class="img-container">
-              <img
-                src="/img/ttd-dekan.png"
-                alt=""
-              />
-            </div>
-            <div class="name-container">
-              <span class="nama">Muhammad Yamin S.T, M.T</span>
-              <span class="jabatan">Dekan Fakultas Sains dan Teknologi UNIQHBA</span>
-            </div>
-          </div>
-
-          <!-- KETUA KOMUNITAS -->
-          <div class="item">
-            <div class="img-container">
-              <img
-                src="/img/ttd-ketua-komunitas.png"
-                alt=""
-              />
-            </div>
-            <div class="name-container">
-              <span class="nama">Ahmad Rizky Nusantara Habibi</span>
-              <span class="jabatan">Ketua komunitas UNIQHBA Underground</span>
-            </div>
-          </div>
-
-          <!-- KETUA PANITIA -->
-          <div class="item">
-            <div class="img-container">
-              <img
-                src="/img/ttd-ketua-panitia.png"
-                alt=""
-              />
-            </div>
-            <div class="name-container">
-              <span class="nama">Sabardi Bahari</span>
-              <span class="jabatan">Ketua panitia penyelenggara</span>
-            </div>
-          </div>
+        <div class="flex flex-col gap-1.5 w-full">
+          <label for="labelAchievement" class="text-xs ml-2">Label Pencapaian</label>
+          <Input
+            id="labelAchievement"
+            bind:value={labelAchievement}
+            placeholder="Atas partisipasi pada acara"
+          />
         </div>
-
-        <div class="kredensial">
-          <div class="certificate-type">
-            <span class="field">CYBER SECURITY</span>
-            <span class="type">Certificate Completion</span>
-          </div>
-          <!-- ID Sertifikat -->
-          <span class="certificate-id">ID: 49DK2MAPNBQP</span>
+        <div class="flex flex-col gap-1.5 w-full">
+          <label for="achievement" class="text-xs ml-2">Pencapaian</label>
+          <Input
+            id="achievement"
+            bind:value={achievement}
+            placeholder="Meet Up Cyber Security: The Smart Way to Start in Cyber Security"
+          />
+        </div>
+        <div class="flex flex-col gap-1.5 w-full">
+          <label for="date" class="text-xs ml-2">Tanggal</label>
+          <Popover.Root>
+            <Popover.Trigger
+              class={cn(
+                buttonVariants({
+                  variant: "outline",
+                  class: "w-full justify-start text-left font-normal"
+                }),
+                !tanggal && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon />
+              {tanggal ? df.format(tanggal.toDate(getLocalTimeZone())) : "Pick a date"}
+            </Popover.Trigger>
+            <Popover.Content bind:ref={contentRef} class="w-auto p-0">
+              <Calendar type="single" bind:value={tanggal} />
+            </Popover.Content>
+          </Popover.Root>
+        </div>
+        <div class="flex flex-col gap-1.5 w-full">
+          <label for="field" class="text-xs ml-2">Field</label>
+          <Select.Root type="single" name="field" bind:value={field}>
+            <Select.Trigger class="w-full">
+              {field ? field : "Pilih Field"}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Group>
+                <Select.Label>Fields</Select.Label>
+                {#each fields as f}
+                  <Select.Item
+                    value={f}
+                    label={f}
+                  >
+                    {f}
+                  </Select.Item>
+                {/each}
+              </Select.Group>
+            </Select.Content>
+          </Select.Root>
+        </div>
+        <div class="flex flex-col gap-1.5 w-full">
+          <label for="certType" class="text-xs ml-2">Certificate Type</label>
+          <Select.Root type="single" name="certType" bind:value={certType}>
+            <Select.Trigger class="w-full">
+              {certType ? certType : "Pilih Jenis Sertifikat"}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Group>
+                <Select.Label>Certificate Types</Select.Label>
+                {#each certTypes as c}
+                  <Select.Item
+                    value={c}
+                    label={c}
+                  >
+                    {c}
+                  </Select.Item>
+                {/each}
+              </Select.Group>
+            </Select.Content>
+          </Select.Root>
+        </div>
+        <div class="flex flex-col gap-1.5 w-full">
+          <label for="certId" class="text-xs ml-2">Certificate ID</label>
+          <Input
+            id="certId"
+            bind:value={certId}
+            placeholder=""
+          />
         </div>
       </div>
-    {/if}
-    <div class="flex items-center justify-center w-full">
-      <button onclick={generateCertificate} class="w-fit py-4 px-10 bg-uniqhbaunderground text-white font-bold text-xl rounded-lg cursor-pointer hover:bg-uniqhbaunderground/90">
-        Generate
-      </button>
+
+      <div class="flex items-center justify-center w-full">
+        <Button onclick={generateCertificate} class="w-full cursor-pointer">
+          Generate
+        </Button>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-0 h-0 overflow-hidden">
+    <div bind:this={certificateEl} id="certificate" class="certificate">
+      <img
+        src="img/certificate-template.png"
+        alt="template"
+        class="w-full h-full"
+        crossorigin="anonymous"
+      />
+
+      <!-- Label Nama -->
+      <span class="label-nama">Diberikan kepada</span>
+      <!-- Nama Lengkap -->
+      <span class="nama-lengkap">{namaLengkap}</span>
+
+      <!-- Label Pencapaian -->
+      <span class="label-achievement">{labelAchievement}</span>
+      <!-- Pencapaian -->
+      <div class="achievement">
+        <p>{achievement}</p>
+      </div>
+
+      <!-- Tanggal Sertifikat -->
+      <span class="date">{indoDate}</span>
+
+      <div class="ttd">
+        <!-- DEKAN -->
+        <div class="item">
+          <div class="img-container">
+            <img
+              src="/img/ttd-dekan.png"
+              alt=""
+            />
+          </div>
+          <div class="name-container">
+            <span class="nama">Muhammad Yamin S.T, M.T</span>
+            <span class="jabatan">Dekan Fakultas Sains dan Teknologi UNIQHBA</span>
+          </div>
+        </div>
+
+        <!-- KETUA KOMUNITAS -->
+        <div class="item">
+          <div class="img-container">
+            <img
+              src="/img/ttd-ketua-komunitas.png"
+              alt=""
+            />
+          </div>
+          <div class="name-container">
+            <span class="nama">Ahmad Rizky Nusantara Habibi</span>
+            <span class="jabatan">Ketua komunitas UNIQHBA Underground</span>
+          </div>
+        </div>
+
+        <!-- KETUA PANITIA -->
+        <div class="item">
+          <div class="img-container">
+            <img
+              src="/img/ttd-ketua-panitia.png"
+              alt=""
+            />
+          </div>
+          <div class="name-container">
+            <span class="nama">Sabardi Bahari</span>
+            <span class="jabatan">Ketua panitia penyelenggara</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kredensial">
+        <div class="certificate-type">
+          <span class="field">{field}</span>
+          <span class="type">{certType}</span>
+        </div>
+        <!-- ID Sertifikat -->
+        <span class="certificate-id">ID: {certId}</span>
+      </div>
     </div>
   </div>
 </div>
