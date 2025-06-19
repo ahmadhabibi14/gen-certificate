@@ -3,6 +3,7 @@
 	import Input from "@/lib/components/ui/input/input.svelte";
 	import Button from "@/lib/components/ui/button/button.svelte";
   import CalendarIcon from "@lucide/svelte/icons/calendar";
+  import { LoaderCircle } from '@lucide/svelte';
   import {
 	CalendarDate,
     DateFormatter,
@@ -14,6 +15,8 @@
   import { Calendar } from "$lib/components/ui/calendar/index.js";
   import * as Popover from "$lib/components/ui/popover/index.js";
   import * as Select from "$lib/components/ui/select/index.js";
+
+  let isGenerating: boolean = $state(false);
 
   let namaLengkap: string = $state('Ahmad Rizky Nusantara Habibi');
   let labelAchievement: string = $state('Atas partisipasi pada acara');
@@ -63,6 +66,7 @@
   let certificateEl: HTMLDivElement;
 
   async function generateCertificate() {
+    isGenerating = true;
     indoDate = formatTanggalIndo(tanggal?.toString() || '')
     htmlToImage.toPng(certificateEl, {
       quality: 1,
@@ -71,13 +75,15 @@
       link.download = 'certificate.png';
       link.href = dataUrl;
       link.click();
+
+      isGenerating = false;
     });
   }
 </script>
 
 <div class="flex w-full min-h-screen flex-col relative">
   <div class="h-full container mx-auto my-10 flex flex-col gap-5">
-    <h1 class="text-4xl font-bold text-center">Generate Certificate</h1>
+    <h1 class="text-2xl md:text-4xl font-bold text-center">Generate Certificate</h1>
     <div class="flex flex-col gap-5 w-full px-5 md:px-0 md:w-[500px] mx-auto">
       <div class="flex flex-col gap-3">
         <div class="flex flex-col gap-1.5 w-full">
@@ -177,8 +183,14 @@
       </div>
 
       <div class="flex items-center justify-center w-full">
-        <Button onclick={generateCertificate} class="w-full cursor-pointer">
-          Generate
+        <Button disabled={isGenerating} onclick={generateCertificate} class="disabled:cursor-not-allowed w-full cursor-pointer flex justify-center items-center gap-2">
+          {#if isGenerating}
+            <LoaderCircle class="h-4 w-4 animate-spin" />
+            Generating...
+          {/if}
+          {#if !isGenerating}
+            Generate
+          {/if}
         </Button>
       </div>
     </div>
