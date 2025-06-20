@@ -307,6 +307,7 @@
     font-size: 50px;
     color: var(--color-uniqhbaunderground);
     font-weight: 700;
+    text-transform: capitalize;
   }
 
   /* PENCAPAIAN */
@@ -325,6 +326,7 @@
     color: var(--color-uniqhbaunderground);
     font-weight: 700;
     width: 50%;
+    text-transform: capitalize;
   }
   .certificate .achievement p {
     line-height: 120%;
@@ -405,6 +407,7 @@
   .certificate .kredensial .certificate-type .field {
     font-weight: 700;
     font-size: 30px;
+    text-transform: uppercase;
   }
   .certificate .kredensial .certificate-type .type {
     font-weight: 500;
